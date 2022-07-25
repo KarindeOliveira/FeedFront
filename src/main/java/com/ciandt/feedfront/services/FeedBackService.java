@@ -2,11 +2,12 @@ package com.ciandt.feedfront.services;
 
 import com.ciandt.feedfront.contracts.DAO;
 import com.ciandt.feedfront.contracts.Service;
+import com.ciandt.feedfront.excecoes.ArquivoException;
+import com.ciandt.feedfront.excecoes.BusinessException;
 import com.ciandt.feedfront.excecoes.EmailInvalidoException;
 import com.ciandt.feedfront.excecoes.EntidadeNaoEncontradaException;
 import com.ciandt.feedfront.models.Employee;
-import com.ciandt.feedfront.excecoes.ArquivoException;
-import com.ciandt.feedfront.excecoes.BusinessException;
+import com.ciandt.feedfront.models.FeedBack;
 
 import java.io.File;
 import java.io.IOException;
@@ -21,18 +22,21 @@ import java.util.stream.Stream;
 
 import static com.ciandt.feedfront.daos.EmployeeDAO.getInputStream;
 
-public class EmployeeService implements Service<Employee> {
-    private DAO<Employee> dao;
+public class FeedBackService implements Service<FeedBack> {
+
+    private DAO<FeedBack> dao;
 
     private static final String repositorioPath = "src/main/resources/data/employee/"; //TODO: alterar de acordo com a sua implementação
 
-    public EmployeeService() {
+    public FeedBackService() {
         throw new UnsupportedOperationException();
     }
 
+
+
     @Override
-    public List<Employee> listar() throws ArquivoException {
-        List<Employee> employees = new ArrayList<>();
+    public List listar() throws ArquivoException {
+        List<FeedBack> feedBacks = new ArrayList<>();
 
         try {
             Stream<Path> paths = Files.walk(Paths.get(repositorioPath));
@@ -45,7 +49,7 @@ public class EmployeeService implements Service<Employee> {
 
             for (String file: files) {
                 try {
-                    employees.add(buscar(file));
+                    feedBacks.add(buscar(file));
                 } catch (BusinessException e) {
                     throw new RuntimeException(e);
                 }
@@ -56,17 +60,17 @@ public class EmployeeService implements Service<Employee> {
             throw new ArquivoException("");
         }
 
-        return employees;
+        return feedBacks;
     }
 
     @Override
-    public Employee buscar(String id) throws ArquivoException, BusinessException {
-        Employee employee;
+    public FeedBack buscar(String id) throws ArquivoException, BusinessException {
+        FeedBack feedBack;
         ObjectInputStream inputStream;
 
         try {
             inputStream = getInputStream(repositorioPath + id + ".byte");
-            employee = (Employee) inputStream.readObject();
+            feedBack = (FeedBack) inputStream.readObject();
 
             inputStream.close();
         } catch (IOException | ClassNotFoundException e) {
@@ -77,22 +81,22 @@ public class EmployeeService implements Service<Employee> {
             throw new ArquivoException("");
         }
 
-        return employee;
+        return feedBack;
     }
 
     @Override
-    public Employee salvar(Employee employee) throws ArquivoException, BusinessException {
-          try {
-              List<Employee> employees = null;
-              try {
-                  employees = dao.listar();
-              } catch (ClassNotFoundException e) {
-                  throw new RuntimeException(e);
-              }
+    public FeedBack salvar(FeedBack feedBack) throws ArquivoException, BusinessException, IllegalArgumentException {
+        try {
+            List<FeedBack> feedBacks = null;
+            try {
+                feedBacks= dao.listar();
+            } catch (ClassNotFoundException e) {
+                throw new RuntimeException(e);
+            }
 
-              boolean emailExistente = false;
-            for (Employee employeeSalvo: employees) {
-                if (!employeeSalvo.getId().equals(employee.getId()) && employeeSalvo.getEmail().equals(employee.getEmail())) {
+            boolean emailExistente = false;
+            for (FeedBack feedBackSalvo: feedBacks) {
+                if (!feedBackSalvo.getId().equals(feedBack.getId())) {
                     emailExistente = true;
                     break;
                 }
@@ -102,25 +106,25 @@ public class EmployeeService implements Service<Employee> {
                 throw new EmailInvalidoException("E-mail ja cadastrado no repositorio");
             }
 
-              try {
-                  dao.salvar(employee);
-              } catch (ClassNotFoundException e) {
-                  throw new RuntimeException(e);
-              }
+            try {
+                dao.salvar(feedBack);
+            } catch (ClassNotFoundException e) {
+                throw new RuntimeException(e);
+            }
 
-          } catch (IOException e) {
+        } catch (IOException e) {
             System.out.println(e.getMessage());
             e.printStackTrace();
             throw new ArquivoException("");
         }
-        return employee;
+        return feedBack;
     }
 
     @Override
-    public Employee atualizar(Employee employee) throws ArquivoException, BusinessException {
-        buscar(employee.getId());
+    public FeedBack atualizar(FeedBack feedBack) throws ArquivoException, BusinessException, IllegalArgumentException {
+        buscar(feedBack.getId());
 
-        return salvar(employee);
+        return salvar(feedBack);
     }
 
     @Override
@@ -128,10 +132,13 @@ public class EmployeeService implements Service<Employee> {
         buscar(id);
 
         new File(String.format("%s%s.byte", repositorioPath, id)).delete();
+
     }
 
     @Override
-    public void setDAO(DAO<Employee> dao) {
+    public void setDAO(DAO<FeedBack> dao) {
 
     }
+
+
 }

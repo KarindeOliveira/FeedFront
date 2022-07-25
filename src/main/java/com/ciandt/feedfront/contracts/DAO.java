@@ -8,12 +8,12 @@ import java.util.List;
 public interface DAO<E> {
     boolean tipoImplementaSerializable();
 
-    List<E> listar() throws IOException, EntidadeNaoSerializavelException;
+    List<E> listar() throws IOException, EntidadeNaoSerializavelException, ClassNotFoundException;
 
-    E buscar(String id) throws IOException, EntidadeNaoSerializavelException;
+    E buscar(String id) throws IOException, EntidadeNaoSerializavelException, ClassNotFoundException;
 
-    E salvar(E e) throws IOException, EntidadeNaoSerializavelException;
+    E salvar(E e) throws IOException, EntidadeNaoSerializavelException, ClassNotFoundException;
 
-    boolean apagar(String id) throws IOException, EntidadeNaoSerializavelException;
+    boolean apagar(String id) throws IOException, EntidadeNaoSerializavelException, ClassNotFoundException;
 
 }
